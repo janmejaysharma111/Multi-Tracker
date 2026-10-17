@@ -1,1 +1,14 @@
 *.txt
+
+build/
+
+.qtcreator/
+
+.vscode/
+
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
