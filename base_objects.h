@@ -3,21 +3,21 @@
 using namespace std;
 
 //Expense class is used by expense tracker
-class Expense{
-    float price;
-    string type="";
+// class Expense{
+//     float price;
+//     string type="";
 
-    public:
-    Expense(float p){
-        price=p;
-        type="Miscellaneous";
-    }
+//     public:
+//     Expense(float p){
+//         price=p;
+//         type="Miscellaneous";
+//     }
 
-    Expense(float p, string n){
-        price=p;
-        type=n;
-    }
-};
+//     Expense(float p, string n){
+//         price=p;
+//         type=n;
+//     }
+// };
 
 // Time class will be used by Study and fitness tracker
 class Time{

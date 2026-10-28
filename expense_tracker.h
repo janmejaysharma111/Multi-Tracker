@@ -1,14 +1,11 @@
 #include "tracker.h"
 #include "base_objects.h"
-#include "other_utilities.h"
 
 class ExpenseTracker : public Tracker{
-        Calender<int> daily_spend;
+        Calender<Hashmap<string,int>> daily_spend;
         Hashmap<string,int> categories;
         public:
-
-        bool valid_day(int month, int day);
-        void add_expense(int month, int day, float value);
+        void add_expense(int month, int day, float val, string type);
         float get_month_total(int month);
 
 };
