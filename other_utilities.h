@@ -1,6 +1,13 @@
 #include<iostream>
 using namespace std;
 
+int day_to_line(int month, int day){
+    if(!valid_day(month,day)) return -1;
+    const int daysBeforeMonth[] = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+    return daysBeforeMonth[month] + (day - 1);
+}
+
+
 bool valid_day(int month, int day){
     if(month > 12 || month < 1 || day < 1) return false;
     if(month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12){
@@ -10,7 +17,7 @@ bool valid_day(int month, int day){
     }else{
         if(day <= 30)return true;
     }
-        return false;
+    return false;
 }
 
 template<class T>
@@ -47,3 +54,38 @@ class Hashmap{
     
 };
 
+class Time{
+    int hours;
+    int mins;
+
+    public:
+    Time(){
+        hours = 0;
+        mins = 0;
+    }
+
+    Time(int hour , int min){
+        hours = hour+min/60;
+        mins = min%60;
+    }
+};
+
+class CheckList{
+    bool had_meal[3];
+    string meal_name[3];
+
+    public:
+    CheckList(){
+        had_meal[0]=had_meal[1]=had_meal[2]=0;
+        meal_name[0]=meal_name[1]=meal_name[2]="";
+    }
+
+    CheckList(bool bfd, bool ld, bool dd, string bfn , string ln, string dn){
+        had_meal[0]=bfd;
+        had_meal[1]=ld;
+        had_meal[2]=dd;
+        meal_name[0]=bfn;
+        meal_name[1]=ln;
+        meal_name[2]=dn;
+    }
+};
