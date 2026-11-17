@@ -1,14 +1,8 @@
-#include<iostream>
+#pragma once
+#include<bits/stdc++.h>
 using namespace std;
 
-int day_to_line(int month, int day){
-    if(!valid_day(month,day)) return -1;
-    const int daysBeforeMonth[] = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-    return daysBeforeMonth[month] + (day - 1);
-}
-
-
-bool valid_day(int month, int day){
+inline bool valid_day(int month, int day){
     if(month > 12 || month < 1 || day < 1) return false;
     if(month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12){
         if(day <= 31) return true;
@@ -18,6 +12,27 @@ bool valid_day(int month, int day){
         if(day <= 30)return true;
     }
     return false;
+}
+
+inline int day_to_line(int month, int day){
+    if(!valid_day(month,day)) return -1;
+    const int daysBeforeMonth[] = {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+    return daysBeforeMonth[month] + (day - 1);
+}
+
+inline vector<string> line_to_array(string str){
+    string curr  = "";
+    vector<string> output;
+    for(char c : str){
+        if(c == ','){
+            output.push_back(curr);
+            curr = "";
+        }else{
+            curr += c;
+        }
+    }
+    output.push_back(curr);
+    return output;
 }
 
 template<class T>
@@ -89,3 +104,4 @@ class CheckList{
         meal_name[2]=dn;
     }
 };
+

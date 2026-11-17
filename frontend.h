@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QString>
+#include "expense_tracker.h"
 
 // Forward declarations to keep compilation fast
 class QWidget;
@@ -28,10 +29,15 @@ private slots:
     void goToPreviousMonth();
     void goToNextMonth();
     void backToMainMenu();
+    void onOption1Clicked();
+    void onOption2Clicked();
+    void onOption3Clicked();
 
 private:
     void updateCalendar();
     void openTracker(const QString &trackerName);
+    void showDayDetails(int day);
+    void showAddExpenseDialog(int preselectedDay = -1);
 
     // Layout and Page Management
     QWidget *centralWidget;
@@ -60,7 +66,10 @@ private:
 
     // State Variables
     int currentMonth;
-    int currentYear;
+    QString currentTracker;
+
+    // Expense Tracker Model
+    ExpenseTracker expenseTracker;
 };
 
 #endif // FRONTEND_H
