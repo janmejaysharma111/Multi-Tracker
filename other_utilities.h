@@ -79,9 +79,36 @@ class Time{
         mins = 0;
     }
 
+    Time(int totalMinutes){
+        hours = totalMinutes / 60;
+        mins = totalMinutes % 60;
+    }
+
     Time(int hour , int min){
-        hours = hour+min/60;
-        mins = min%60;
+        hours = hour + min / 60;
+        mins = min % 60;
+    }
+
+    int getHours() const { return hours; }
+    int getMins() const { return mins; }
+    int getTotalMinutes() const { return hours * 60 + mins; }
+
+    Time operator+(const Time &other) const {
+        return Time(0, getTotalMinutes() + other.getTotalMinutes());
+    }
+
+    Time& operator+=(const Time &other) {
+        int total = getTotalMinutes() + other.getTotalMinutes();
+        hours = total / 60;
+        mins = total % 60;
+        return *this;
+    }
+
+    string toString() const {
+        if (hours > 0) {
+            return to_string(hours) + "h " + to_string(mins) + "m";
+        }
+        return to_string(mins) + "m";
     }
 };
 
@@ -102,6 +129,48 @@ class CheckList{
         meal_name[0]=bfn;
         meal_name[1]=ln;
         meal_name[2]=dn;
+    }
+
+    bool hasBreakfast() const { return had_meal[0]; }
+    bool hasLunch() const { return had_meal[1]; }
+    bool hasDinner() const { return had_meal[2]; }
+    bool hasMeal(int index) const {
+        if(index >= 0 && index < 3) return had_meal[index];
+        return false;
+    }
+
+    string getBreakfastName() const { return meal_name[0]; }
+    string getLunchName() const { return meal_name[1]; }
+    string getDinnerName() const { return meal_name[2]; }
+    string getMealName(int index) const {
+        if(index >= 0 && index < 3) return meal_name[index];
+        return "";
+    }
+
+    void setBreakfast(bool had, const string &name = "") {
+        had_meal[0] = had;
+        meal_name[0] = name;
+    }
+
+    void setLunch(bool had, const string &name = "") {
+        had_meal[1] = had;
+        meal_name[1] = name;
+    }
+
+    void setDinner(bool had, const string &name = "") {
+        had_meal[2] = had;
+        meal_name[2] = name;
+    }
+
+    void setMeal(int index, bool had, const string &name = "") {
+        if(index >= 0 && index < 3) {
+            had_meal[index] = had;
+            meal_name[index] = name;
+        }
+    }
+
+    int totalMealsHad() const {
+        return (had_meal[0] ? 1 : 0) + (had_meal[1] ? 1 : 0) + (had_meal[2] ? 1 : 0);
     }
 };
 

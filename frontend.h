@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QString>
 #include "expense_tracker.h"
+#include "fitness_tracker.h"
+#include "study_tracker.h"
+#include "food_tracker.h"
 
 // Forward declarations to keep compilation fast
 class QWidget;
@@ -38,6 +41,12 @@ private:
     void openTracker(const QString &trackerName);
     void showDayDetails(int day);
     void showAddExpenseDialog(int preselectedDay = -1);
+    void showFitnessDayDetails(int day);
+    void showAddFitnessDialog(int preselectedDay = -1);
+    void showStudyDayDetails(int day);
+    void showAddStudyDialog(int preselectedDay = -1);
+    void showFoodDayDetails(int day);
+    void showLogMealDialog(int preselectedDay = -1);
 
     // Layout and Page Management
     QWidget *centralWidget;
@@ -70,6 +79,15 @@ private:
 
     // Expense Tracker Model
     ExpenseTracker expenseTracker;
+
+    // Fitness Tracker Model
+    FitnessTracker fitnessTracker;
+
+    // Study Tracker Model
+    StudyTracker studyTracker;
+
+    // Food Tracker Model
+    FoodTracker foodTracker;
 };
 
 #endif // FRONTEND_H

@@ -10,7 +10,6 @@ void ExpenseTracker :: setup_tracker(){
 
     const vector<string> cat_names = {"food", "stationary", "travel", "lifestyle", "miscellaneous"};
 
-    // Reset / Initialize categories for all 12 months with 0
     for(int m = 0; m < 12; m++){
         categories[m] = Hashmap<string, int>();
         for(const string &cat : cat_names){
@@ -19,14 +18,12 @@ void ExpenseTracker :: setup_tracker(){
         categories[m].add("total", 0);
     }
 
-    // Reset daily_spend
     for(int m = 0; m < 12; m++){
         for(int d = 0; d < 31; d++){
             daily_spend.array[m][d] = Hashmap<string, int>();
         }
     }
 
-    // Read lines from expense_tracker.txt
     vector<string> lines;
     fstream file(db_file_name, ios::in);
     if(file.is_open()){
@@ -38,7 +35,6 @@ void ExpenseTracker :: setup_tracker(){
         file.close();
     }
 
-    // If file is missing or has fewer than 365 lines, pad with "0,0,0,0,0" and write it out
     if(lines.size() < 365){
         while(lines.size() < 365){
             lines.push_back("0,0,0,0,0");
@@ -52,7 +48,6 @@ void ExpenseTracker :: setup_tracker(){
         }
     }
 
-    // Populate daily_spend and categories using day_to_line
     for(int month = 1; month <= 12; month++){
         for(int day = 1; day <= 31; day++){
             if(!valid_day(month, day)) continue;
