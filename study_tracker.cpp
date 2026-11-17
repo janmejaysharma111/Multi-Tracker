@@ -162,12 +162,20 @@ void StudyTracker::add_to_db(int month, int day, float val, string type) {
     }
 }
 
-void StudyTracker::manage_history() {
+void StudyTracker::manage_history(const string &msg) {
     fstream file("history.txt", ios::app);
     if (file.is_open()) {
-        file << "Study tracker updated\n";
+        if (msg.empty()) {
+            file << "[Study Tracker] History updated\n";
+        } else {
+            file << "[Study Tracker] " << msg << "\n";
+        }
         file.close();
     }
+}
+
+void StudyTracker::manage_history() {
+    manage_history("History updated");
 }
 
 void StudyTracker::add_study_time(int month, int day, float val, string type) {
@@ -208,7 +216,7 @@ void StudyTracker::add_study_time(int month, int day, float val, string type) {
         }
 
         add_to_db(month, day, val, type);
-        manage_history();
+        manage_history("This element is added to the db: " + type + " - " + to_string(int_val) + " mins on day " + to_string(day) + "/" + to_string(month));
     }
 }
 

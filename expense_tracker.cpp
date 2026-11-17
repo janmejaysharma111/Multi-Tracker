@@ -157,12 +157,20 @@ void ExpenseTracker :: add_to_db(int month, int day, float val, string type){
     }
 }
 
-void ExpenseTracker :: manage_history(){
+void ExpenseTracker :: manage_history(const string &msg){
     fstream file("history.txt", ios::app);
     if(file.is_open()){
-        file << "Expense tracker updated\n";
+        if(msg.empty()){
+            file << "[Expense Tracker] History updated\n";
+        } else {
+            file << "[Expense Tracker] " << msg << "\n";
+        }
         file.close();
     }
+}
+
+void ExpenseTracker :: manage_history(){
+    manage_history("History updated");
 }
 
 void ExpenseTracker :: add_expense(int month, int day, float val, string type){
@@ -203,7 +211,7 @@ void ExpenseTracker :: add_expense(int month, int day, float val, string type){
         }
 
         add_to_db(month, day, val, type);
-        manage_history();
+        manage_history("This element is added to the db: " + type + " - ₹" + to_string(int_val) + " on day " + to_string(day) + "/" + to_string(month));
     }
 }
 

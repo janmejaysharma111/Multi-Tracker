@@ -11,5 +11,7 @@ class Tracker {
         virtual void setup_tracker() = 0;
         virtual void add_to_db() = 0;
         virtual void manage_history() = 0;
+        virtual void manage_history(const string &msg) = 0;
         void print_current_tracker();
+        string getType() const { return type; }
 };

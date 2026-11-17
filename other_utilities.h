@@ -52,7 +52,7 @@ class Hashmap{
         for(int i=0 ; i<30 ; i++)value[i]=0;
     }
 
-    int search(T1 a) {
+    int search(T1 a) const {
         for (int i = 0; i < num; i++) {
             if (key[i] == a) {
                 return i;

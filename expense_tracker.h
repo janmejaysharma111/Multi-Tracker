@@ -2,16 +2,29 @@
 #include "tracker.h"
 #include "other_utilities.h"
 
+// Forward declarations for friend functions
+int calculateSavings(const class ExpenseTracker &, int, int);
+struct DailyReport;
+DailyReport getDailyReport(const class ExpenseTracker &, const class FitnessTracker &,
+                           const class FoodTracker &, const class StudyTracker &,
+                           int, int, int, int);
+
 class ExpenseTracker : public Tracker {
     Calender<Hashmap<string,int>> daily_spend;
     Hashmap<string,int> categories[12];
     string db_file_name = "";
+
+    friend int calculateSavings(const ExpenseTracker &, int, int);
+    friend DailyReport getDailyReport(const ExpenseTracker &, const class FitnessTracker &,
+                                      const class FoodTracker &, const class StudyTracker &,
+                                      int, int, int, int);
 
 public:
     ExpenseTracker();
     void setup_tracker() override;
     void add_to_db() override;
     void manage_history() override;
+    void manage_history(const string &msg) override;
     void add_to_db(int month, int day, float val, string type);
     void add_expense(int month, int day, float val, string type);
     float get_month_total(int month);

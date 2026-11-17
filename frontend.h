@@ -3,10 +3,13 @@
 
 #include <QMainWindow>
 #include <QString>
+#include "tracker.h"
 #include "expense_tracker.h"
 #include "fitness_tracker.h"
 #include "study_tracker.h"
 #include "food_tracker.h"
+#include "user_settings.h"
+#include "cross_tracker_analysis.h"
 
 // Forward declarations to keep compilation fast
 class QWidget;
@@ -28,16 +31,17 @@ private slots:
     void openFitnessTracker();
     void openFoodTracker();
     void openStudyTracker();
-    void createNewTracker();
     void goToPreviousMonth();
     void goToNextMonth();
     void backToMainMenu();
     void onOption1Clicked();
     void onOption2Clicked();
     void onOption3Clicked();
+    void openSettingsDialog();
 
 private:
     void updateCalendar();
+    void updateDashboardStats();
     void openTracker(const QString &trackerName);
     void showDayDetails(int day);
     void showAddExpenseDialog(int preselectedDay = -1);
@@ -59,8 +63,14 @@ private:
     QPushButton *fitnessButton;
     QPushButton *foodButton;
     QPushButton *studyButton;
-    QPushButton *createNewButton;
     QPushButton *exitButton;
+    QPushButton *settingsButton;
+
+    // Dashboard Stats Labels (shown on main screen)
+    QLabel *greetingLabel;
+    QLabel *healthyDaysLabel;
+    QLabel *studyTargetLabel;
+    QLabel *savingsLabel;
 
     // Tracker UI Elements
     QLabel *trackerTitle;
@@ -77,16 +87,16 @@ private:
     int currentMonth;
     QString currentTracker;
 
-    // Expense Tracker Model
+    // Polymorphic Tracker Pointer (run-time polymorphism)
+    Tracker *activeTracker = nullptr;
+
+    // User Settings (name, study target, daily budget)
+    UserSettings userSettings;
+
+    // Tracker Models
     ExpenseTracker expenseTracker;
-
-    // Fitness Tracker Model
     FitnessTracker fitnessTracker;
-
-    // Study Tracker Model
     StudyTracker studyTracker;
-
-    // Food Tracker Model
     FoodTracker foodTracker;
 };
 

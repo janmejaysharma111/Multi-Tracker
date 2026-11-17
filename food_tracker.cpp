@@ -159,12 +159,20 @@ void FoodTracker::add_to_db(int month, int day) {
     }
 }
 
-void FoodTracker::manage_history() {
+void FoodTracker::manage_history(const string &msg) {
     fstream file("history.txt", ios::app);
     if (file.is_open()) {
-        file << "Food tracker updated\n";
+        if (msg.empty()) {
+            file << "[Food Tracker] History updated\n";
+        } else {
+            file << "[Food Tracker] " << msg << "\n";
+        }
         file.close();
     }
+}
+
+void FoodTracker::manage_history() {
+    manage_history("History updated");
 }
 
 void FoodTracker::set_daily_checklist(int month, int day, const CheckList &checklist) {
@@ -192,7 +200,10 @@ void FoodTracker::set_daily_checklist(int month, int day, const CheckList &check
     meal_counts[m_idx].add("full_days", full_days);
 
     add_to_db(month, day);
-    manage_history();
+    string bStatus = checklist.hasBreakfast() ? (checklist.getBreakfastName().empty() ? "Yes" : checklist.getBreakfastName()) : "Skipped";
+    string lStatus = checklist.hasLunch() ? (checklist.getLunchName().empty() ? "Yes" : checklist.getLunchName()) : "Skipped";
+    string dStatus = checklist.hasDinner() ? (checklist.getDinnerName().empty() ? "Yes" : checklist.getDinnerName()) : "Skipped";
+    manage_history("This element is added to the db: Meals updated on day " + to_string(day) + "/" + to_string(month) + " [B: " + bStatus + ", L: " + lStatus + ", D: " + dStatus + "]");
 }
 
 void FoodTracker::update_meal(int month, int day, int mealIndex, bool had, const string &foodName) {

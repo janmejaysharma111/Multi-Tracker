@@ -162,12 +162,20 @@ void FitnessTracker::add_to_db(int month, int day, float val, string type) {
     }
 }
 
-void FitnessTracker::manage_history() {
+void FitnessTracker::manage_history(const string &msg) {
     fstream file("history.txt", ios::app);
     if (file.is_open()) {
-        file << "Fitness tracker updated\n";
+        if (msg.empty()) {
+            file << "[Fitness Tracker] History updated\n";
+        } else {
+            file << "[Fitness Tracker] " << msg << "\n";
+        }
         file.close();
     }
+}
+
+void FitnessTracker::manage_history() {
+    manage_history("History updated");
 }
 
 void FitnessTracker::add_activity(int month, int day, float val, string type) {
@@ -208,7 +216,7 @@ void FitnessTracker::add_activity(int month, int day, float val, string type) {
         }
 
         add_to_db(month, day, val, type);
-        manage_history();
+        manage_history("This element is added to the db: " + type + " - " + to_string(int_val) + " mins on day " + to_string(day) + "/" + to_string(month));
     }
 }
 
