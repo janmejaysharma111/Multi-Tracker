@@ -10,7 +10,7 @@ void FitnessTracker::setup_tracker() {
 
     const vector<string> cat_names = {"walking", "running", "sports", "gym", "yoga"};
 
-    // Reset / Initialize categories for all 12 months with 0
+    // set all 12 months with 0
     for (int m = 0; m < 12; m++) {
         categories[m] = Hashmap<string, int>();
         for (const string &cat : cat_names) {
@@ -38,19 +38,6 @@ void FitnessTracker::setup_tracker() {
         file.close();
     }
 
-    // If file is missing or has fewer than 365 lines, pad with "0,0,0,0,0" and write it out
-    if (lines.size() < 365) {
-        while (lines.size() < 365) {
-            lines.push_back("0,0,0,0,0");
-        }
-        fstream out(db_file_name, ios::out | ios::trunc);
-        if (out.is_open()) {
-            for (const auto &l : lines) {
-                out << l << "\n";
-            }
-            out.close();
-        }
-    }
 
     // Populate daily_activity and categories using day_to_line
     for (int month = 1; month <= 12; month++) {

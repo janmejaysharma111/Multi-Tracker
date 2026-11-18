@@ -35,19 +35,6 @@ void ExpenseTracker :: setup_tracker(){
         file.close();
     }
 
-    if(lines.size() < 365){
-        while(lines.size() < 365){
-            lines.push_back("0,0,0,0,0");
-        }
-        fstream out(db_file_name, ios::out | ios::trunc);
-        if(out.is_open()){
-            for(const auto &l : lines){
-                out << l << "\n";
-            }
-            out.close();
-        }
-    }
-
     for(int month = 1; month <= 12; month++){
         for(int day = 1; day <= 31; day++){
             if(!valid_day(month, day)) continue;

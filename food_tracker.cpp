@@ -34,19 +34,6 @@ void FoodTracker::setup_tracker() {
         file.close();
     }
 
-    if (lines.size() < 365) {
-        while (lines.size() < 365) {
-            lines.push_back("0,,0,,0,");
-        }
-        fstream out(db_file_name, ios::out | ios::trunc);
-        if (out.is_open()) {
-            for (const auto &l : lines) {
-                out << l << "\n";
-            }
-            out.close();
-        }
-    }
-
     for (int month = 1; month <= 12; month++) {
         int m_idx = month - 1;
         int bf_count = 0;
