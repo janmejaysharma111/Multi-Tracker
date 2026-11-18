@@ -36,24 +36,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("OOPS Multi-Tracker");
     resize(1000, 650);
 
-    // Track active month (12-month tracker, defaults to January = 1)
     currentMonth = 1;
+    dashboardMonth = 1;
     currentTracker = "";
 
-    // Central widget and page manager
     centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
     QVBoxLayout *rootLayout = new QVBoxLayout(centralWidget);
     pages = new QStackedWidget(centralWidget);
     rootLayout->addWidget(pages);
 
-    // ================= MAIN MENU =================
     mainPage = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout(mainPage);
     layout->setContentsMargins(30, 20, 30, 20);
     layout->setSpacing(10);
 
-    // --- Top bar: greeting + settings button ---
     QHBoxLayout *topBarLayout = new QHBoxLayout();
     greetingLabel = new QLabel(QString("Welcome, %1").arg(QString::fromStdString(userSettings.getUserName())));
     QFont greetFont;
@@ -91,15 +88,42 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     title->setFont(titleFont);
     layout->addWidget(title);
 
-    QLabel *subtitle = new QLabel("Select a tracker to get started");
-    subtitle->setAlignment(Qt::AlignCenter);
-    QFont subFont;
-    subFont.setPointSize(12);
-    subtitle->setFont(subFont);
-    subtitle->setStyleSheet("color: #64748b; margin-bottom: 4px;");
-    layout->addWidget(subtitle);
+    QHBoxLayout *statsRowLayout = new QHBoxLayout();
+    statsRowLayout->setSpacing(8);
 
-    // --- Stats Row: Healthy Days | Study Target Days | Savings ---
+    prevStatsButton = new QPushButton("<");
+    nextStatsButton = new QPushButton(">");
+    prevStatsButton->setFixedWidth(44);
+    nextStatsButton->setFixedWidth(44);
+    prevStatsButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    nextStatsButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    prevStatsButton->setCursor(Qt::PointingHandCursor);
+    nextStatsButton->setCursor(Qt::PointingHandCursor);
+    prevStatsButton->setToolTip("Previous Month");
+    nextStatsButton->setToolTip("Next Month");
+
+    QString sideBtnStyle =
+        "QPushButton {"
+        "  background-color: #0f172a;"
+        "  color: #94a3b8;"
+        "  border: 1.5px solid #1e293b;"
+        "  border-radius: 0px;"
+        "  font-size: 20px;"
+        "  font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #1e293b;"
+        "  border-color: #3b82f6;"
+        "  color: #ffffff;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: #2563eb;"
+        "  color: #ffffff;"
+        "}";
+
+    prevStatsButton->setStyleSheet(sideBtnStyle);
+    nextStatsButton->setStyleSheet(sideBtnStyle);
+
     QFrame *statsFrame = new QFrame;
     statsFrame->setFrameShape(QFrame::StyledPanel);
     statsFrame->setStyleSheet(
@@ -109,52 +133,67 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         "  border-radius: 0px;"
         "}"
     );
-    QHBoxLayout *statsLayout = new QHBoxLayout(statsFrame);
+
+    QVBoxLayout *statsContainerLayout = new QVBoxLayout(statsFrame);
+    statsContainerLayout->setContentsMargins(16, 10, 16, 10);
+    statsContainerLayout->setSpacing(6);
+
+    dashboardMonthLabel = new QLabel("JANUARY OVERVIEW");
+    dashboardMonthLabel->setAlignment(Qt::AlignCenter);
+    QFont monthTitleFont;
+    monthTitleFont.setPointSize(12);
+    monthTitleFont.setBold(true);
+    dashboardMonthLabel->setFont(monthTitleFont);
+    dashboardMonthLabel->setStyleSheet("color: #38bdf8; letter-spacing: 1.5px; font-weight: 700;");
+    statsContainerLayout->addWidget(dashboardMonthLabel);
+
+    QHBoxLayout *statsLayout = new QHBoxLayout();
     statsLayout->setSpacing(0);
     statsLayout->setContentsMargins(0, 0, 0, 0);
 
-    auto makeStatWidget = [](const QString &icon, const QString &label, QLabel *&valueLabel, const QString &color) -> QWidget* {
+    auto makeStatWidget = [](const QString &icon, QLabel *&valueLabel, const QString &color) -> QWidget* {
         QWidget *cell = new QWidget;
         QVBoxLayout *v = new QVBoxLayout(cell);
-        v->setSpacing(2);
-        v->setContentsMargins(16, 12, 16, 12);
+        v->setSpacing(4);
+        v->setContentsMargins(10, 4, 10, 4);
 
         QLabel *iconLbl = new QLabel(icon);
         iconLbl->setAlignment(Qt::AlignCenter);
-        iconLbl->setStyleSheet(QString("color: %1; font-size: 18px; font-weight: bold;").arg(color));
+        iconLbl->setStyleSheet(QString("color: %1; font-size: 14px; font-weight: bold; letter-spacing: 1.5px;").arg(color));
 
         valueLabel = new QLabel("--");
         valueLabel->setAlignment(Qt::AlignCenter);
-        QFont vf; vf.setPointSize(20); vf.setBold(true);
+        QFont vf; vf.setPointSize(22); vf.setBold(true);
         valueLabel->setFont(vf);
         valueLabel->setStyleSheet(QString("color: %1;").arg(color));
 
-        QLabel *nameLbl = new QLabel(label);
-        nameLbl->setAlignment(Qt::AlignCenter);
-        nameLbl->setStyleSheet("color: #64748b; font-size: 11px;");
-
         v->addWidget(iconLbl);
         v->addWidget(valueLabel);
-        v->addWidget(nameLbl);
         return cell;
     };
 
-    statsLayout->addWidget(makeStatWidget("HEALTH", "Healthy Days (Jan)", healthyDaysLabel, "#10b981"), 1);
+    statsLayout->addWidget(makeStatWidget("HEALTHY DAYS", healthyDaysLabel, "#10b981"), 1);
 
     QFrame *sep1 = new QFrame; sep1->setFrameShape(QFrame::VLine);
     sep1->setStyleSheet("color: #1e293b;");
     statsLayout->addWidget(sep1);
 
-    statsLayout->addWidget(makeStatWidget("TARGET", "Study Goals (Jan)", studyTargetLabel, "#8b5cf6"), 1);
+    statsLayout->addWidget(makeStatWidget("STUDY TARGET DAYS", studyTargetLabel, "#8b5cf6"), 1);
 
     QFrame *sep2 = new QFrame; sep2->setFrameShape(QFrame::VLine);
     sep2->setStyleSheet("color: #1e293b;");
     statsLayout->addWidget(sep2);
 
-    statsLayout->addWidget(makeStatWidget("SAVED", "Savings Jan (Rs)", savingsLabel, "#f59e0b"), 1);
+    statsLayout->addWidget(makeStatWidget("SAVINGS", savingsLabel, "#f59e0b"), 1);
 
-    statsFrame->setMinimumHeight(100);
-    layout->addWidget(statsFrame);
+    statsContainerLayout->addLayout(statsLayout);
+    statsFrame->setMinimumHeight(120);
+
+    statsRowLayout->addWidget(prevStatsButton);
+    statsRowLayout->addWidget(statsFrame, 1);
+    statsRowLayout->addWidget(nextStatsButton);
+
+    layout->addLayout(statsRowLayout);
 
     expenseButton = new QPushButton("Expense Tracker");
     fitnessButton = new QPushButton("Fitness Tracker");
@@ -171,21 +210,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     foodButton->setFont(btnFont);
     studyButton->setFont(btnFont);
 
-    expenseButton->setMinimumHeight(150);
-    expenseButton->setMinimumWidth(280);
-    fitnessButton->setMinimumHeight(150);
-    fitnessButton->setMinimumWidth(280);
-    foodButton->setMinimumHeight(150);
-    foodButton->setMinimumWidth(280);
-    studyButton->setMinimumHeight(150);
-    studyButton->setMinimumWidth(280);
+    expenseButton->setMinimumHeight(120);
+    expenseButton->setMinimumWidth(260);
+    fitnessButton->setMinimumHeight(120);
+    fitnessButton->setMinimumWidth(260);
+    foodButton->setMinimumHeight(120);
+    foodButton->setMinimumWidth(260);
+    studyButton->setMinimumHeight(120);
+    studyButton->setMinimumWidth(260);
 
     expenseButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     fitnessButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     foodButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     studyButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // Darker, sharp rectangular card styling for 2x2 grid buttons (no rounded corners)
     expenseButton->setStyleSheet(
         "QPushButton {"
         "  background-color: #0f172a;"
@@ -297,14 +335,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     layout->addWidget(exitButton, 0, Qt::AlignCenter);
     pages->addWidget(mainPage);
 
-    // Load all trackers silently for stats calculation
     expenseTracker.setup_tracker();
     fitnessTracker.setup_tracker();
     studyTracker.setup_tracker();
     foodTracker.setup_tracker();
     updateDashboardStats();
 
-    // ================= TRACKER PAGE =================
     trackerPage = new QWidget;
     QVBoxLayout *trackerLayout = new QVBoxLayout(trackerPage);
     trackerLayout->setContentsMargins(25, 20, 25, 20);
@@ -318,7 +354,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     trackerTitle->setFont(trackerFont);
     trackerLayout->addWidget(trackerTitle);
 
-    // Month navigation
     QHBoxLayout *monthLayout = new QHBoxLayout();
     monthLayout->setSpacing(16);
     previousButton = new QPushButton("<");
@@ -360,7 +395,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     monthLayout->addWidget(nextButton);
     trackerLayout->addLayout(monthLayout);
 
-    // Calendar and action buttons
     QHBoxLayout *contentLayout = new QHBoxLayout();
     contentLayout->setSpacing(24);
 
@@ -380,7 +414,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     option3 = new QPushButton("Option 3");
     backButton = new QPushButton("Back to Menu");
 
-    // Increased sizes for the 3 option buttons
     option1->setMinimumHeight(58);
     option2->setMinimumHeight(58);
     option3->setMinimumHeight(58);
@@ -466,11 +499,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     trackerLayout->addLayout(contentLayout);
     pages->addWidget(trackerPage);
 
-    // ================= INITIALIZE CALENDAR =================
     updateCalendar();
 
-    // ================= SIGNALS & SLOTS =================
-    // Dashboard Navigation Slots
     connect(expenseButton, &QPushButton::clicked, this, &MainWindow::openExpenseTracker);
     connect(fitnessButton, &QPushButton::clicked, this, &MainWindow::openFitnessTracker);
     connect(foodButton, &QPushButton::clicked, this, &MainWindow::openFoodTracker);
@@ -478,12 +508,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(exitButton, &QPushButton::clicked, qApp, &QApplication::quit);
     connect(settingsButton, &QPushButton::clicked, this, &MainWindow::openSettingsDialog);
 
-    // Calendar Navigation Slots
+    connect(prevStatsButton, &QPushButton::clicked, this, &MainWindow::prevDashboardMonth);
+    connect(nextStatsButton, &QPushButton::clicked, this, &MainWindow::nextDashboardMonth);
+
     connect(previousButton, &QPushButton::clicked, this, &MainWindow::goToPreviousMonth);
     connect(nextButton, &QPushButton::clicked, this, &MainWindow::goToNextMonth);
     connect(backButton, &QPushButton::clicked, this, &MainWindow::backToMainMenu);
 
-    // Action Slots
     connect(option1, &QPushButton::clicked, this, &MainWindow::onOption1Clicked);
     connect(option2, &QPushButton::clicked, this, &MainWindow::onOption2Clicked);
     connect(option3, &QPushButton::clicked, this, &MainWindow::onOption3Clicked);
@@ -491,30 +522,35 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() {}
 
-// =====================================================================
-// updateDashboardStats â€” Uses friend functions from cross_tracker_analysis
-// to compute and display stats on the main dashboard panel
-// =====================================================================
-void MainWindow::updateDashboardStats() {
-    int month = 1; // Always show January stats on dashboard (current year month 1)
-
-    // Friend of FoodTracker + FitnessTracker
-    int healthy = countHealthyDays(foodTracker, fitnessTracker, month);
-
-    // Friend of StudyTracker
-    int studyAchieved = countStudyTargetDays(studyTracker, month, userSettings.getStudyTargetMinutes());
-
-    // Friend of ExpenseTracker
-    int savings = calculateSavings(expenseTracker, month, userSettings.getDailyBudget());
-
-    healthyDaysLabel->setText(QString::number(healthy));
-    studyTargetLabel->setText(QString::number(studyAchieved));
-    savingsLabel->setText(QString("\xe2\x82\xb9%1").arg(savings)); // â‚¹ in UTF-8
+void MainWindow::prevDashboardMonth() {
+    if (--dashboardMonth < 1) {
+        dashboardMonth = 12;
+    }
+    updateDashboardStats();
 }
 
-// =====================================================================
-// openSettingsDialog â€” Login/Settings panel with name, study target, budget
-// =====================================================================
+void MainWindow::nextDashboardMonth() {
+    if (++dashboardMonth > 12) {
+        dashboardMonth = 1;
+    }
+    updateDashboardStats();
+}
+
+void MainWindow::updateDashboardStats() {
+    int month = dashboardMonth;
+
+    int healthy = countHealthyDays(foodTracker, fitnessTracker, month);
+    int studyAchieved = countStudyTargetDays(studyTracker, month, userSettings.getStudyTargetMinutes());
+    int savings = calculateSavings(expenseTracker, month, userSettings.getDailyBudget());
+
+    QString monthName = MONTH_NAMES[dashboardMonth];
+
+    dashboardMonthLabel->setText(monthName.toUpper() + " OVERVIEW");
+    healthyDaysLabel->setText(QString::number(healthy));
+    studyTargetLabel->setText(QString::number(studyAchieved));
+    savingsLabel->setText(QString("\xe2\x82\xb9%1").arg(savings));
+}
+
 void MainWindow::openSettingsDialog() {
     QDialog dialog(this);
     dialog.setWindowTitle("Settings & Profile");
@@ -533,13 +569,11 @@ void MainWindow::openSettingsDialog() {
     form.setSpacing(14);
     form.setContentsMargins(24, 24, 24, 24);
 
-    // Name field
     QLineEdit *nameEdit = new QLineEdit(&dialog);
     nameEdit->setText(QString::fromStdString(userSettings.getUserName()));
     nameEdit->setPlaceholderText("Enter your name");
     form.addRow("Your Name:", nameEdit);
 
-    // Study target (hours + minutes)
     QSpinBox *studyHSpin = new QSpinBox(&dialog);
     studyHSpin->setRange(0, 12);
     studyHSpin->setSuffix(" hrs");
@@ -557,11 +591,10 @@ void MainWindow::openSettingsDialog() {
     studyWidget->setLayout(studyTimeLayout);
     form.addRow("Daily Study Target:", studyWidget);
 
-    // Daily budget in rupees
     QSpinBox *budgetSpin = new QSpinBox(&dialog);
     budgetSpin->setRange(50, 100000);
     budgetSpin->setSingleStep(50);
-    budgetSpin->setPrefix("\xe2\x82\xb9 "); // â‚¹
+    budgetSpin->setPrefix("\xe2\x82\xb9 ");
     budgetSpin->setValue(userSettings.getDailyBudget());
     form.addRow("Daily Budget:", budgetSpin);
 
@@ -579,10 +612,7 @@ void MainWindow::openSettingsDialog() {
         userSettings.setDailyBudget(budgetSpin->value());
         userSettings.save();
 
-        // Update greeting
         greetingLabel->setText(QString("Welcome, %1").arg(QString::fromStdString(newName)));
-
-        // Refresh stats with new targets
         updateDashboardStats();
 
         QMessageBox::information(this, "Settings Saved",
@@ -594,19 +624,16 @@ void MainWindow::openSettingsDialog() {
     }
 }
 
-// Helper routing function
 void MainWindow::openTracker(const QString &trackerName) {
     trackerTitle->setText(trackerName);
     pages->setCurrentWidget(trackerPage);
 }
 
-// Slots Implementations
 void MainWindow::openExpenseTracker() {
     currentTracker = "Expense Tracker";
-    currentMonth = 1; // Default open as January
+    currentMonth = 1;
     expenseTracker.setup_tracker();
 
-    // Run-time polymorphism: invoke virtual manage_history via Tracker* base pointer
     activeTracker = &expenseTracker;
     activeTracker->manage_history("This tracker is open");
 
@@ -621,10 +648,9 @@ void MainWindow::openExpenseTracker() {
 
 void MainWindow::openFitnessTracker() {
     currentTracker = "Fitness Tracker";
-    currentMonth = 1; // Default open as January
+    currentMonth = 1;
     fitnessTracker.setup_tracker();
 
-    // Run-time polymorphism: invoke virtual manage_history via Tracker* base pointer
     activeTracker = &fitnessTracker;
     activeTracker->manage_history("This tracker is open");
 
@@ -637,10 +663,9 @@ void MainWindow::openFitnessTracker() {
 
 void MainWindow::openFoodTracker() {
     currentTracker = "Food Tracker";
-    currentMonth = 1; // Default open as January
+    currentMonth = 1;
     foodTracker.setup_tracker();
 
-    // Run-time polymorphism: invoke virtual manage_history via Tracker* base pointer
     activeTracker = &foodTracker;
     activeTracker->manage_history("This tracker is open");
 
@@ -653,10 +678,9 @@ void MainWindow::openFoodTracker() {
 
 void MainWindow::openStudyTracker() {
     currentTracker = "Study Tracker";
-    currentMonth = 1; // Default open as January
+    currentMonth = 1;
     studyTracker.setup_tracker();
 
-    // Run-time polymorphism: invoke virtual manage_history via Tracker* base pointer
     activeTracker = &studyTracker;
     activeTracker->manage_history("This tracker is open");
 
@@ -674,7 +698,6 @@ void MainWindow::backToMainMenu() {
     }
     currentTracker = "";
     pages->setCurrentWidget(mainPage);
-    // Refresh cross-tracker stats after returning to main menu
     updateDashboardStats();
 }
 
@@ -698,7 +721,6 @@ void MainWindow::goToNextMonth() {
     updateCalendar();
 }
 
-// Calendar Generator Engine (12-month calendar without weekdays, normal square grid with heatmap)
 void MainWindow::updateCalendar() {
     QLayoutItem *item;
     while ((item = calendarLayout->takeAt(0)) != nullptr) {
@@ -711,10 +733,8 @@ void MainWindow::updateCalendar() {
     const int COLS = 7;
 
     if (currentTracker == "Expense Tracker") {
-        // Ensure bidirectional sync: reload any changes from file
         expenseTracker.setup_tracker();
 
-        // 1. Find max expense across all days in this month to scale the heatmap
         int maxSpend = 0;
         for (int d = 1; d <= totalDays; ++d) {
             Hashmap<string, int> spend = expenseTracker.get_daily_spend(currentMonth, d);
@@ -725,7 +745,6 @@ void MainWindow::updateCalendar() {
             }
         }
 
-        // 2. Generate days in a normal square grid starting at (0,0) without reserved spaces
         for (int day = 1; day <= totalDays; ++day) {
             int index = day - 1;
             int row = index / COLS;
@@ -739,19 +758,16 @@ void MainWindow::updateCalendar() {
             int dayTotal = (tot_idx != -1) ? spend.value[tot_idx] : 0;
 
             if (dayTotal > 0) {
-                // Ratio from lowest relative spend to highest
                 double ratio = (maxSpend > 0) ? (double)dayTotal / (double)maxSpend : 0.0;
                 double t = 0.15 + 0.85 * ratio;
 
-                // Color gradient: higher expense is darker, lower expense is lighter
                 int r = (int)(224 * (1.0 - t) + 30 * t);
                 int g = (int)(242 * (1.0 - t) + 58 * t);
                 int b = (int)(254 * (1.0 - t) + 138 * t);
 
-                // Dynamically adjust text color based on lightness of the day box
                 QString textColor = (t > 0.45) ? "#ffffff" : "#0f172a";
 
-                dateButton->setText(QString("%1\n₹%2").arg(day).arg(dayTotal));
+                dateButton->setText(QString("%1\n\xe2\x82\xb9%2").arg(day).arg(dayTotal));
                 dateButton->setStyleSheet(QString(
                     "QPushButton {"
                     "  background-color: rgb(%1, %2, %3);"
@@ -792,10 +808,8 @@ void MainWindow::updateCalendar() {
             calendarLayout->addWidget(dateButton, row, col);
         }
     } else if (currentTracker == "Fitness Tracker") {
-        // Ensure bidirectional sync: reload any changes from file
         fitnessTracker.setup_tracker();
 
-        // 1. Find max active time across all days in this month to scale the heatmap
         int maxTime = 0;
         for (int d = 1; d <= totalDays; ++d) {
             Hashmap<string, int> activity = fitnessTracker.get_daily_activity(currentMonth, d);
@@ -806,7 +820,6 @@ void MainWindow::updateCalendar() {
             }
         }
 
-        // 2. Generate days in a square grid with emerald/green fitness heatmap
         for (int day = 1; day <= totalDays; ++day) {
             int index = day - 1;
             int row = index / COLS;
@@ -823,7 +836,6 @@ void MainWindow::updateCalendar() {
                 double ratio = (maxTime > 0) ? (double)dayTotal / (double)maxTime : 0.0;
                 double t = 0.15 + 0.85 * ratio;
 
-                // Color gradient: emerald green for fitness
                 int r = (int)(220 * (1.0 - t) + 16 * t);
                 int g = (int)(252 * (1.0 - t) + 120 * t);
                 int b = (int)(231 * (1.0 - t) + 70 * t);
@@ -872,10 +884,8 @@ void MainWindow::updateCalendar() {
             calendarLayout->addWidget(dateButton, row, col);
         }
     } else if (currentTracker == "Study Tracker") {
-        // Ensure bidirectional sync: reload any changes from file
         studyTracker.setup_tracker();
 
-        // 1. Find max study time across all days in this month to scale the heatmap
         int maxTime = 0;
         for (int d = 1; d <= totalDays; ++d) {
             Hashmap<string, int> study = studyTracker.get_daily_study(currentMonth, d);
@@ -886,7 +896,6 @@ void MainWindow::updateCalendar() {
             }
         }
 
-        // 2. Generate days in a square grid with purple/indigo study heatmap
         for (int day = 1; day <= totalDays; ++day) {
             int index = day - 1;
             int row = index / COLS;
@@ -903,7 +912,6 @@ void MainWindow::updateCalendar() {
                 double ratio = (maxTime > 0) ? (double)dayTotal / (double)maxTime : 0.0;
                 double t = 0.15 + 0.85 * ratio;
 
-                // Color gradient: rich indigo/purple for study
                 int r = (int)(243 * (1.0 - t) + 109 * t);
                 int g = (int)(232 * (1.0 - t) + 40 * t);
                 int b = (int)(255 * (1.0 - t) + 217 * t);
@@ -952,10 +960,8 @@ void MainWindow::updateCalendar() {
             calendarLayout->addWidget(dateButton, row, col);
         }
     } else if (currentTracker == "Food Tracker") {
-        // Ensure bidirectional sync: reload any changes from file
         foodTracker.setup_tracker();
 
-        // Generate days in a square grid with warm amber/orange food heatmap
         for (int day = 1; day <= totalDays; ++day) {
             int index = day - 1;
             int row = index / COLS;
@@ -968,19 +974,15 @@ void MainWindow::updateCalendar() {
             int mealsHad = cl.totalMealsHad();
 
             if (mealsHad > 0) {
-                // Warm amber/orange gradient based on meals had (1, 2, or 3)
                 int r, g, b;
                 QString textColor;
                 if (mealsHad == 3) {
-                    // All 3 meals had - rich vibrant orange
                     r = 234; g = 88; b = 12;
                     textColor = "#ffffff";
                 } else if (mealsHad == 2) {
-                    // 2 meals - warm medium amber
                     r = 251; g = 146; b = 60;
                     textColor = "#431407";
                 } else {
-                    // 1 meal - soft light amber
                     r = 254; g = 215; b = 170;
                     textColor = "#7c2d12";
                 }
@@ -1026,7 +1028,6 @@ void MainWindow::updateCalendar() {
             calendarLayout->addWidget(dateButton, row, col);
         }
     } else {
-        // Normal square grid for other trackers
         for (int day = 1; day <= totalDays; ++day) {
             int index = day - 1;
             int row = index / COLS;
@@ -1066,7 +1067,7 @@ void MainWindow::showDayDetails(int day) {
     if (activeTracker) {
         activeTracker->manage_history("Day details inspected for " + to_string(day) + "/" + to_string(currentMonth));
     }
-    expenseTracker.setup_tracker(); // Ensure fresh sync
+    expenseTracker.setup_tracker();
     Hashmap<string, int> spend = expenseTracker.get_daily_spend(currentMonth, day);
 
     auto getVal = [&](const string &cat) {
@@ -1084,12 +1085,12 @@ void MainWindow::showDayDetails(int day) {
     QString dateStr = QString("%1 %2").arg(day).arg(MONTH_NAMES[currentMonth]);
     QString msg = QString("<b>Date: %1</b><br><br>"
                           "<table width='100%' style='font-size: 14px;'>"
-                          "<tr><td><b>Food:</b></td><td>₹%2</td></tr>"
-                          "<tr><td><b>Stationary:</b></td><td>₹%3</td></tr>"
-                          "<tr><td><b>Travel:</b></td><td>₹%4</td></tr>"
-                          "<tr><td><b>Lifestyle:</b></td><td>₹%5</td></tr>"
-                          "<tr><td><b>Miscellaneous:</b></td><td>₹%6</td></tr>"
-                          "<tr style='border-top: 1px solid gray;'><td><b>Total:</b></td><td><b>₹%7</b></td></tr>"
+                          "<tr><td><b>Food:</b></td><td>\xe2\x82\xb9%2</td></tr>"
+                          "<tr><td><b>Stationary:</b></td><td>\xe2\x82\xb9%3</td></tr>"
+                          "<tr><td><b>Travel:</b></td><td>\xe2\x82\xb9%4</td></tr>"
+                          "<tr><td><b>Lifestyle:</b></td><td>\xe2\x82\xb9%5</td></tr>"
+                          "<tr><td><b>Miscellaneous:</b></td><td>\xe2\x82\xb9%6</td></tr>"
+                          "<tr style='border-top: 1px solid gray;'><td><b>Total:</b></td><td><b>\xe2\x82\xb9%7</b></td></tr>"
                           "</table>")
                       .arg(dateStr)
                       .arg(food)
@@ -1140,7 +1141,7 @@ void MainWindow::showAddExpenseDialog(int preselectedDay) {
     amountSpin->setRange(1.0, 1000000.0);
     amountSpin->setDecimals(2);
     amountSpin->setValue(10.00);
-    form.addRow("Amount (₹):", amountSpin);
+    form.addRow("Amount (\xe2\x82\xb9):", amountSpin);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
                                Qt::Horizontal, &dialog);
@@ -1158,7 +1159,7 @@ void MainWindow::showAddExpenseDialog(int preselectedDay) {
         updateCalendar();
 
         QMessageBox::information(this, "Success",
-            QString("Added ₹%1 to %2 for %3 %4.")
+            QString("Added \xe2\x82\xb9%1 to %2 for %3 %4.")
                 .arg(amount)
                 .arg(catCombo->currentText())
                 .arg(MONTH_NAMES[currentMonth])
@@ -1170,7 +1171,7 @@ void MainWindow::showFitnessDayDetails(int day) {
     if (activeTracker) {
         activeTracker->manage_history("Day details inspected for " + to_string(day) + "/" + to_string(currentMonth));
     }
-    fitnessTracker.setup_tracker(); // Ensure fresh sync
+    fitnessTracker.setup_tracker();
     Hashmap<string, int> act = fitnessTracker.get_daily_activity(currentMonth, day);
 
     auto getVal = [&](const string &cat) {
@@ -1286,7 +1287,7 @@ void MainWindow::showStudyDayDetails(int day) {
     if (activeTracker) {
         activeTracker->manage_history("Day details inspected for " + to_string(day) + "/" + to_string(currentMonth));
     }
-    studyTracker.setup_tracker(); // Ensure fresh sync
+    studyTracker.setup_tracker();
     Hashmap<string, int> study = studyTracker.get_daily_study(currentMonth, day);
 
     auto getVal = [&](const string &cat) {
@@ -1406,7 +1407,7 @@ void MainWindow::showFoodDayDetails(int day) {
     if (activeTracker) {
         activeTracker->manage_history("Day details inspected for " + to_string(day) + "/" + to_string(currentMonth));
     }
-    foodTracker.setup_tracker(); // Ensure fresh sync
+    foodTracker.setup_tracker();
     CheckList cl = foodTracker.get_daily_checklist(currentMonth, day);
 
     QString dateStr = QString("%1 %2").arg(day).arg(MONTH_NAMES[currentMonth]);
@@ -1471,7 +1472,6 @@ void MainWindow::showLogMealDialog(int preselectedDay) {
     }
     form.addRow("Day:", &daySpin);
 
-    // Breakfast
     QCheckBox bfCheck("Had Breakfast", &dialog);
     QLineEdit bfEdit(&dialog);
     bfEdit.setPlaceholderText("Food eaten (e.g. Oatmeal & Eggs)");
@@ -1480,7 +1480,6 @@ void MainWindow::showLogMealDialog(int preselectedDay) {
     bfLayout.addWidget(&bfEdit);
     form.addRow("Breakfast:", &bfLayout);
 
-    // Lunch
     QCheckBox lunchCheck("Had Lunch", &dialog);
     QLineEdit lunchEdit(&dialog);
     lunchEdit.setPlaceholderText("Food eaten (e.g. Rice & Chicken)");
@@ -1489,7 +1488,6 @@ void MainWindow::showLogMealDialog(int preselectedDay) {
     lunchLayout.addWidget(&lunchEdit);
     form.addRow("Lunch:", &lunchLayout);
 
-    // Dinner
     QCheckBox dinnerCheck("Had Dinner", &dialog);
     QLineEdit dinnerEdit(&dialog);
     dinnerEdit.setPlaceholderText("Food eaten (e.g. Salad & Pasta)");
@@ -1559,15 +1557,15 @@ void MainWindow::onOption2Clicked() {
         activeTracker->manage_history("Option 2 clicked: " + option2->text().toStdString() + " for " + MONTH_NAMES[currentMonth].toStdString());
     }
     if (currentTracker == "Expense Tracker") {
-        expenseTracker.setup_tracker(); // Ensure fresh sync
+        expenseTracker.setup_tracker();
         float monthTotal = expenseTracker.get_month_total(currentMonth);
         QString monthName = MONTH_NAMES[currentMonth];
         QMessageBox::information(this, "Month Total",
-            QString("<h3>Total Expenses for %1</h3><br><font size='+2' color='#2563eb'><b>₹%2</b></font>")
+            QString("<h3>Total Expenses for %1</h3><br><font size='+2' color='#2563eb'><b>\xe2\x82\xb9%2</b></font>")
                 .arg(monthName)
                 .arg(monthTotal));
     } else if (currentTracker == "Fitness Tracker") {
-        fitnessTracker.setup_tracker(); // Ensure fresh sync
+        fitnessTracker.setup_tracker();
         Time monthTotal = fitnessTracker.get_month_total_time(currentMonth);
         QString monthName = MONTH_NAMES[currentMonth];
         QMessageBox::information(this, "Month Total",
@@ -1576,7 +1574,7 @@ void MainWindow::onOption2Clicked() {
                 .arg(QString::fromStdString(monthTotal.toString()))
                 .arg(monthTotal.getTotalMinutes()));
     } else if (currentTracker == "Study Tracker") {
-        studyTracker.setup_tracker(); // Ensure fresh sync
+        studyTracker.setup_tracker();
         Time monthTotal = studyTracker.get_month_total_time(currentMonth);
         QString monthName = MONTH_NAMES[currentMonth];
         QMessageBox::information(this, "Month Total",
@@ -1585,7 +1583,7 @@ void MainWindow::onOption2Clicked() {
                 .arg(QString::fromStdString(monthTotal.toString()))
                 .arg(monthTotal.getTotalMinutes()));
     } else if (currentTracker == "Food Tracker") {
-        foodTracker.setup_tracker(); // Ensure fresh sync
+        foodTracker.setup_tracker();
         int totalMeals = foodTracker.get_month_total_meals(currentMonth);
         int totalDays = getDaysInMonth(currentMonth);
         int maxMeals = totalDays * 3;
@@ -1613,7 +1611,7 @@ void MainWindow::onOption3Clicked() {
         activeTracker->manage_history("Option 3 clicked: " + option3->text().toStdString() + " for " + MONTH_NAMES[currentMonth].toStdString());
     }
     if (currentTracker == "Expense Tracker") {
-        expenseTracker.setup_tracker(); // Ensure fresh sync
+        expenseTracker.setup_tracker();
         Hashmap<string, int> catTotals = expenseTracker.getCategoryTotal(currentMonth);
         auto getVal = [&](const string &cat) {
             int idx = catTotals.search(cat);
@@ -1630,12 +1628,12 @@ void MainWindow::onOption3Clicked() {
         QString monthName = MONTH_NAMES[currentMonth];
         QString msg = QString("<h3>Category Breakdown for %1</h3>"
                               "<table width='100%' style='font-size: 14px; margin-top: 10px;'>"
-                              "<tr><td><b>Food:</b></td><td>₹%2</td></tr>"
-                              "<tr><td><b>Stationary:</b></td><td>₹%3</td></tr>"
-                              "<tr><td><b>Travel:</b></td><td>₹%4</td></tr>"
-                              "<tr><td><b>Lifestyle:</b></td><td>₹%5</td></tr>"
-                              "<tr><td><b>Miscellaneous:</b></td><td>₹%6</td></tr>"
-                              "<tr style='border-top: 1px solid gray;'><td><b>Total:</b></td><td><b>₹%7</b></td></tr>"
+                              "<tr><td><b>Food:</b></td><td>\xe2\x82\xb9%2</td></tr>"
+                              "<tr><td><b>Stationary:</b></td><td>\xe2\x82\xb9%3</td></tr>"
+                              "<tr><td><b>Travel:</b></td><td>\xe2\x82\xb9%4</td></tr>"
+                              "<tr><td><b>Lifestyle:</b></td><td>\xe2\x82\xb9%5</td></tr>"
+                              "<tr><td><b>Miscellaneous:</b></td><td>\xe2\x82\xb9%6</td></tr>"
+                              "<tr style='border-top: 1px solid gray;'><td><b>Total:</b></td><td><b>\xe2\x82\xb9%7</b></td></tr>"
                               "</table>")
                           .arg(monthName)
                           .arg(food)
@@ -1647,7 +1645,7 @@ void MainWindow::onOption3Clicked() {
 
         QMessageBox::information(this, "Category Totals", msg);
     } else if (currentTracker == "Fitness Tracker") {
-        fitnessTracker.setup_tracker(); // Ensure fresh sync
+        fitnessTracker.setup_tracker();
         Hashmap<string, int> catTotals = fitnessTracker.getCategoryTotal(currentMonth);
         auto getVal = [&](const string &cat) {
             int idx = catTotals.search(cat);
@@ -1682,7 +1680,7 @@ void MainWindow::onOption3Clicked() {
 
         QMessageBox::information(this, "Activity Breakdown", msg);
     } else if (currentTracker == "Study Tracker") {
-        studyTracker.setup_tracker(); // Ensure fresh sync
+        studyTracker.setup_tracker();
         Hashmap<string, int> subTotals = studyTracker.getSubjectTotal(currentMonth);
         auto getVal = [&](const string &sub) {
             int idx = subTotals.search(sub);
@@ -1720,7 +1718,7 @@ void MainWindow::onOption3Clicked() {
 
         QMessageBox::information(this, "Subject Breakdown", msg);
     } else if (currentTracker == "Food Tracker") {
-        foodTracker.setup_tracker(); // Ensure fresh sync
+        foodTracker.setup_tracker();
         Hashmap<string, int> counts = foodTracker.get_month_meal_counts(currentMonth);
         auto getVal = [&](const string &m) {
             int idx = counts.search(m);
